@@ -1,10 +1,6 @@
 ---- Installation d'une machine virtuelle, dans notre exemple : mint
 choix de l'utilisateur : ici : zenika/zenika (attention : ne pas perdre le mot de pass admin ! )
 
----- Configuration du poste
-copier les commandes du .bashrc et l'exécuter.
-$> exec bash
-
 ---- Installation des outils
 -- java
 $> sudo apt-get install openjdk-7-jdk
@@ -18,24 +14,28 @@ OpenJDK 64-Bit Server VM (build 24.79-b02, mixed mode)
 -- maven
 $> sudo apt-get install maven
 
+-- eclipse
+$> sudo apt-get install eclipse
 
-sudo mv hadoop-2.7.1.tar.gz /usr/local
+---- Installation hadoop à partir de l'archive (non recommandé en prod : il vaut mieux utiliser une distribution)
 
-cd /usr/local
+$> sudo mv hadoop-2.7.1.tar.gz /usr/local
 
-sudo tar xzf hadoop-2.7.1.tar.gz 
+$> cd /usr/local
 
-sudo chown zenika -R /usr/local/hadoop-2.7.1/
-sudo chown zenika -R /usr/local/hadoop-2.7.1/*
-sudo ln -s /usr/local/hadoop-2.7.1/ /usr/local/hadoop
-sudo chown zenika -R /usr/local/hadoop
-sudo chown zenika -R /usr/local/hadoop/*
-mkdir -p /usr/local/hadoop/dfs/namenode
-mkdir -p /usr/local/hadoop/dfs/data 
+$> sudo tar xzf hadoop-2.7.1.tar.gz 
+
+$> sudo chown zenika -R /usr/local/hadoop-2.7.1/
+$> sudo chown zenika -R /usr/local/hadoop-2.7.1/*
+$> sudo ln -s /usr/local/hadoop-2.7.1/ /usr/local/hadoop
+$> sudo chown zenika -R /usr/local/hadoop
+$> sudo chown zenika -R /usr/local/hadoop/*
+$> mkdir -p /usr/local/hadoop/dfs/namenode
+$> mkdir -p /usr/local/hadoop/dfs/data 
 
 vi /usr/local/hadoop/etc/hadoop/hadoop-env.sh
 
-export HADOOP_PREFIX=/usr/local/hadoop
+
 
 vi /usr/local/hadoop/etc/hadoop/core-site.xml
 
@@ -122,6 +122,14 @@ mapred-site.xml
         <value>localhost:19888</value>
     </property>
 
+---- Configuration du poste
+copier les commandes du .bashrc et l'exécuter.
+(export HADOOP_PREFIX=/usr/local/hadoop)
+$> exec bash
+$> echo $HADOOP_PREFIX
+
+---- script de lancement et d'arrêt des noeuds
+
 start_all.sh
 
 $HADOOP_PREFIX/sbin/hadoop-daemon.sh --script hdfs start namenode
@@ -155,7 +163,11 @@ export PATH=$PATH:$HADOOP_PREFIX/bin:$MAVEN_HOME/bin
 
 export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-amd64
 
+---- Lancement des services
 
+$> ./start_all.sh
+
+---- Vérification que les tous les noeuds sont lancés
 
 zenika@zenika-VirtualBox:~$ jps
 12227 DataNode
@@ -164,6 +176,18 @@ zenika@zenika-VirtualBox:~$ jps
 19506 Jps
 12453 NodeManager
 12394 JobHistoryServer
+
+---- Test MapReduce
+
+-- création des répertoires et pose d'un fichier 
+$> hadoop fs -mkdir /user/data
+$> hadoop fs -mkdir /user/result
+$> hadoop fs -put germinal.txt /user/data
+
+-- Compiler le projet maven et produire le jar avec mvn install
+$> hadoop jar WordCount-0.0.1-SNAPSHOT.jar wordcount.WordCountDriver /user/data /user/result
+
+---- Installation de PIG
 
 PIG
 
