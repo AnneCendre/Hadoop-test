@@ -1,0 +1,216 @@
+
+sudo apt-get install openjdk-7-jdk
+
+java -version
+
+java version "1.7.0_79"
+OpenJDK Runtime Environment (IcedTea 2.5.6) (7u79-2.5.6-0ubuntu1.15.04.1)
+OpenJDK 64-Bit Server VM (build 24.79-b02, mixed mode)
+
+sudo mv hadoop-2.7.1.tar.gz /usr/local
+
+cd /usr/local
+
+sudo tar xzf hadoop-2.7.1.tar.gz 
+
+sudo chown zenika -R /usr/local/hadoop-2.7.1/
+sudo chown zenika -R /usr/local/hadoop-2.7.1/*
+sudo ln -s /usr/local/hadoop-2.7.1/ /usr/local/hadoop
+sudo chown zenika -R /usr/local/hadoop
+sudo chown zenika -R /usr/local/hadoop/*
+mkdir -p /usr/local/hadoop/dfs/namenode
+mkdir -p /usr/local/hadoop/dfs/data 
+
+vi /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+
+export HADOOP_PREFIX=/usr/local/hadoop
+
+vi /usr/local/hadoop/etc/hadoop/core-site.xml
+
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://localhost:9000</value>
+    </property>
+</configuration>
+
+vi /usr/local/hadoop/etc/hadoop/hdfs-site.xml
+
+    <property>
+        <name>dfs.replication</name>
+        <value>3</value>
+    </property>
+
+    <property>
+        <name>dfs.permissions.enabled</name>
+        <value>false</value>
+    </property>
+
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>/usr/local/hadoop/dfs/namenode</value>
+    </property>
+
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>/usr/local/hadoop/dfs/data</value>
+    </property>
+
+yarn-site.xml
+
+    <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>localhost</value>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.log-dirs</name>
+        <value>/tmp/yarn-log/userslogs</value>
+    </property>
+
+    <property>
+        <name>yarn.log-aggregation-enable</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>yarn.nodemanager.delete.debug-delay-sec</name>
+        <value>-1</value>
+    </property>
+
+    <property>
+        <name>yarn.log-aggregation.retain-seconds</name>
+        <value>2592000</value>
+    </property>
+
+    <property>
+        <name>yarn.log.server.url</name>
+        <value>http://${yran.ressourcemanager.hostname}:19888/jobhistory/logs/</value>
+    </property>
+
+mapred-site.xml
+
+    <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+    </property>
+
+    <property>
+        <name>mapreduce.jobhistory.adress</name>
+        <value>localhost:10020</value>
+    </property>
+
+    <property>
+        <name>mapreduce.jobhistory.webapp.address</name>
+        <value>localhost:19888</value>
+    </property>
+
+start_all.sh
+
+$HADOOP_PREFIX/sbin/hadoop-daemon.sh --script hdfs start namenode
+
+$HADOOP_PREFIX/sbin/hadoop-daemon.sh --script hdfs start datanode
+
+$HADOOP_PREFIX/sbin/yarn-daemon.sh start resourcemanager
+
+$HADOOP_PREFIX/sbin/mr-jobhistory-daemon.sh start historyserver
+
+$HADOOP_PREFIX/sbin/yarn-daemon.sh start nodemanager
+
+stop_all.sh
+
+$HADOOP_PREFIX/sbin/hadoop-daemon.sh --script hdfs stop namenode
+
+$HADOOP_PREFIX/sbin/hadoop-daemon.sh --script hdfs stop datanode
+
+$HADOOP_PREFIX/sbin/yarn-daemon.sh stop resourcemanager
+
+$HADOOP_PREFIX/sbin/mr-jobhistory-daemon.sh stop historyserver
+
+$HADOOP_PREFIX/sbin/yarn-daemon.sh stop nodemanager
+
+.bashrc
+
+export MAVEN_HOME=/home/zenika/apache-maven-3.3.3
+
+export HADOOP_PREFIX=/usr/local/hadoop
+export PATH=$PATH:$HADOOP_PREFIX/bin:$MAVEN_HOME/bin
+
+export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-amd64
+
+exec bash
+
+zenika@zenika-VirtualBox:~$ jps
+12227 DataNode
+12141 NameNode
+12326 ResourceManager
+19506 Jps
+12453 NodeManager
+12394 JobHistoryServer
+
+PIG
+
+wget http://mirror.sdunix.com/apache/pig/pig-0.15.0/pig-0.15.0.tar.gz
+
+tar -xvzf pig-0.15.0.tar.gz
+sudo mv pig-0.15.0.tar.gz /usr/local/pig
+
+.bashrc
+export PIG_PREFIX=/usr/local/pig
+export PATH=$PATH:$PIG_PREFIX/bin
+
+exec bash
+
+HIVE
+
+wget http://mirror.tcpdiag.net/apache/hive/hive-1.2.1/apache-hive-1.2.1-bin.tar.gz
+
+tar -xvzf apache-hive-1.2.1-bin.tar.gz
+sudo mv hive-1.2.1 /usr/local/hive
+
+export HIVE_PREFIX=/usr/local/hive
+export PATH=$PATH:$HIVE_PREFIX/bin
+
+HBase
+
+wget http://http://apache.crihan.fr/dist/hbase/1.1.2/hbase-1.1.2-bin.tar.gz
+
+tar -xvzf hbase-1.1.2-bin.tar.gz
+sudo cp -r hbase-1.1.2 /usr/local/hbase
+sudo chown zenika /usr/local/habse
+
+vi $HOME/.bashrc
+export HBASE_PREFIX=/usr/local/hbase
+export PATH=$PATH:$HBASE_PREFIX/bin
+
+sudo vi $HBASE_PREFIX/conf/hbase-env.sh
+
+export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-amd64
+
+sudo vi $HBASE_PREFIX/conf/hbase-site.xml
+
+<configuration>
+<property>
+<name>hbase.rootdir</name>
+<value>hdfs://localhost:10001/hbase</value>
+</property>
+<property>
+<name>hbase.zookeeper.quorum</name>
+<value>localhost</value>
+</property>
+<property>
+<name>hbase.cluster.distributed</name>
+<value>false</value>
+</property>
+</configuration>
+
+sudo vi $HBASE_PREFIX/conf/regionservers
+verifiez que localhost est configuré
+
+start-hbase.sh
+
